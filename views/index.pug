@@ -34,6 +34,7 @@ html
         
         .header
           br
+          h2=user.username
           h1 Welcome!
           br
     else
@@ -69,7 +70,7 @@ html
                   | 
                   label(for='password', class='active') Password
                 .input-field.col.s12
-                  input(type='submit', value='Submit')
+                  button.btn.btn-primary(type='submit') Submit
            
           
           script(type='text/javascript', src='js/materialize.js')

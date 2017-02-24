@@ -26,15 +26,13 @@ html
                 li
                   a(href='/ownposts') Own Posts
                 li
-                  a(href='/register') Register
-                li
                   a(href='/logout') Logout
       .container 
         //put all content within the container
         
         .header
-          br
-          h1 Create a post
+          h2=user.username
+          h1 Create a post here:
           br
         .row
             form(method='POST', action='/createpost')

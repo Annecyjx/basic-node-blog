@@ -15,59 +15,38 @@ html
         });
       });
   body(style='font-size: 22')
-    if user
-      .navbar-fixed
-          nav
-            .nav-wrapper.grey.darken-3
-              a.brand-logo(href='/' style='padding: 0 0 0 15%') Home
-              ul#nav-mobile.right.hide-on-med-and-down(style='padding: 0 15%')
-                li
-                  a(href='/allposts') All Posts
-                li
-                  a(href='/ownposts') Own Posts
-                li
-                  a(href='/createpost') Create Post
-                li
-                  a(href='/logout') Logout
-      .container 
-        //put all content within the container
-        
-        .header
-          br
-          h1 Register
-          br
-        .row
-            form(method='POST', action='/register')
-              .row
-                .input-field.col.s12
-                  input#username.validate(type='text', name='username')
-                  |
-                  br
-                  | 
-                  label(for='username', class='active') Username
-                .input-field.col.s12
-                  input#email.validate(type='text', name='email')
-                  |
-                  br
-                  | 
-                  label(for='email', class='active') Email
-                .input-field.col.s12
-                  input#password.validate(type='text', name='password')
-                  |
-                  br
-                  | 
-                  label(for='password', class='active') Password
-                .input-field.col.s12
-                  button.btn.btn-primary(type='submit') Register
-    else
-      .navbar-fixed
-          nav
-            .nav-wrapper.grey.darken-3
-              a.brand-logo(href='/' style='padding: 0 0 0 15%') Home/Login
-              ul#nav-mobile.right.hide-on-med-and-down(style='padding: 0 15%')
-                li
-                  a(href='/allposts') All Posts
-                li
-                  a(href='/register') Register
-      .container 
-        h2#error-message= message
+    .navbar-fixed
+        nav
+          .nav-wrapper.grey.darken-3
+            a.brand-logo(href='/' style='padding: 0 0 0 15%') Home
+            ul#nav-mobile.right.hide-on-med-and-down(style='padding: 0 15%')
+              li
+                a(href='/allposts') All Posts
+    .container 
+       .header
+        br
+        h1 Register
+        br
+       .row
+          form(method='POST', action='/register')
+            .row
+              .input-field.col.s12
+                input#username.validate(type='text', name='username')
+                |
+                br
+                | 
+                label(for='username', class='active') Username
+              .input-field.col.s12
+                input#email.validate(type='text', name='email')
+                |
+                br
+                | 
+                label(for='email', class='active') Email
+              .input-field.col.s12
+                input#password.validate(type='text', name='password')
+                |
+                br
+                | 
+                label(for='password', class='active') Password
+              .input-field.col.s12
+                button.btn.btn-primary(type='submit') Register

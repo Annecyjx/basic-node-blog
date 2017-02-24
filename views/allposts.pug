@@ -18,10 +18,10 @@ html
                 li
                   a(href='/createpost') Create post
                 li
-                  a(href='/register') Register
-                li
                   a(href='/logout') Logout
       .container 
+        h2=user.username
+        h3 All the posts:
         if magicKey
         each item in magicKey
           h3 * #{item.title}: #{item.body}
@@ -33,4 +33,10 @@ html
             ul#nav-mobile.right.hide-on-med-and-down(style='padding: 0 15%')
               li
                 a(href='/register') Register
+
+      .container 
+        h3 All the posts:
+        if magicKey
+        each item in magicKey
+          h3 * #{item.title}: #{item.body}
       h2#error-message= message

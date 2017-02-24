@@ -33,10 +33,18 @@ const Post = sequelize.define('post', {
 	body: Sequelize.STRING(1024)
 })
 
+//Model table comment
+const Comment = sequelize.define('comment',{
+	body:Sequelize.STRING(1024)
+})
 
-// Relationships
+//Relationships
 User.hasMany(Post)
 Post.belongsTo(User)
+User.hasMany(Comment)
+Post.hasMany(Comment)
+Comment.belongsTo(User)
+Comment.belongsTo(Post)
 
 //Routes
 app.get('/', function (request, response) {
@@ -76,19 +84,27 @@ app.post('/login', bodyParser.urlencoded({extended: true}), function (request, r
 
 app.get('/allposts', (req, res) => {
 	let user = req.session.user;
-		if (user === undefined) {
-			res.redirect('/?message=' + encodeURIComponent("Please log in to view your profile."));
-		} else {
+	if (user === undefined) {
 		let result = [];
 		Post.findAll().then(function(data) {
 			for(var i = 0; i < data.length; i++) {
 				result.push({'title': data[i].title,'body': data[i].body})
 			}
-			res.render('allposts', {
-				user: user,
-				magicKey: result})
-		});
-	}
+			res.render('allposts',{
+				magicKey:result
+			})
+		})
+		} else {
+			let result = [];
+			Post.findAll().then(function(data) {
+				for(var i = 0; i < data.length; i++) {
+					result.push({'title': data[i].title,'body': data[i].body})
+				}
+				res.render('allposts', {
+					user: user,
+					magicKey: result})
+			});
+		}
 });
 
 
@@ -97,8 +113,17 @@ app.get('/ownposts', function (request, response) {
 	if (user === undefined) {
 		response.redirect('/?message=' + encodeURIComponent("Please log in to view your profile."));
 	} else {
-		Post.findAll()
+		Post.findAll({
+			include: [{
+				model: User,
+				where: 
+				{
+					id: user.id
+				}
+			}]
+		})
 		.then(function(data){
+		console.log('logging data')
 		console.log(data)
 		let result = []
 		for(i=0;i<data.length;i++){
@@ -127,28 +152,34 @@ app.get('/createpost', function (request, response) {
 app.post('/createpost', (req, res) => {
 	let userInputTitle = req.body.title;
 	let userInputStory = req.body.body;
-
-	return Post.create({
-        title: userInputTitle,
-        body: userInputStory
-    }).then(function() {
-		res.redirect('ownposts');
-	})
+	let user = req.session.user;
+	console.log(user);
+	if (user === undefined) {
+		res.redirect('/?message=' + encodeURIComponent("Please log in to create a post."));
+	} 
+	else {
+		User.findById(user.id).then(function(user){
+			user.createPost({
+				title: userInputTitle,
+				body: userInputStory
+			})
+			.then(function(post) {
+				console.log('redirecting to ownposts')
+				res.redirect('ownposts');
+			})
+		})
+		
+	}
 });
 
+
 app.get('/register', (req, res) => {
-	let user = req.session.user;
-	if (user === undefined) {
-		response.redirect('/?message=' + encodeURIComponent("Please log in to create a post."));
-	} else {
-		res.render('register', {
-			user: user
-		});
-	}
+	res.render('register')
 })
 
 
 app.post('/register', (req, res) => {
+	console.log('the register post is working')
 	let userInputUsername = req.body.username;
 	let userInputEmail = req.body.email;
 	let userInputPassword = req.body.password;
@@ -158,7 +189,7 @@ app.post('/register', (req, res) => {
 		email: userInputEmail,
 		password: userInputPassword
 	}).then(function() {
-		res.redirect('ownposts');
+		res.redirect('/ownposts');
 	})	
 });
 
@@ -172,16 +203,21 @@ app.get('/logout', function (request, response) {
 });
 
 //Sync library before starting route
-sequelize.sync(/*{force: true}*/).then(function () {
-	User.create({//testdata otherise undefined if we run app
+sequelize.sync(/*{force: true}*/)
+.then(function () {
+		return User.create({//testdata otherise undefined if we run app
 		username: "bob",
 		email: "bob@bob.com",
 		password: "bob"
 	})
-	Post.create({
+	.then(function(parameter){
+		return parameter.createPost({
 		title: "testtitle",
 		body: "testbody"
-	}).then(function () {
+	})
+		// return parameter.createComment
+	})
+	.then(function () {
 		const server = app.listen(3000, function () {
 			console.log('Server has started')
 		})
