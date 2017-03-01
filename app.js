@@ -41,9 +41,10 @@ const Comment = sequelize.define('comment',{
 //Relationships
 User.hasMany(Post)
 Post.belongsTo(User)
+
 User.hasMany(Comment)
-Post.hasMany(Comment)
 Comment.belongsTo(User)
+Post.hasMany(Comment)
 Comment.belongsTo(Post)
 
 //Routes
@@ -94,17 +95,21 @@ app.get('/allposts', (req, res) => {
 				magicKey:result
 			})
 		})
-		} else {
-			let result = [];
-			Post.findAll().then(function(data) {
-				for(var i = 0; i < data.length; i++) {
-					result.push({'title': data[i].title,'body': data[i].body})
-				}
-				res.render('allposts', {
-					user: user,
-					magicKey: result})
-			});
-		}
+	} else {
+		let result = [];
+		Post.findAll()
+		.then(function(data) {
+			console.log('all posts from all users:')
+			console.log(data)
+			for(var i = 0; i < data.length; i++) {
+				result.push({'id':data[i].id,'title': data[i].title,'body': data[i].body})
+			}
+			res.render('allposts', {
+				user: user,
+				magicKey: result,
+			})
+		});
+	}
 });
 
 
@@ -123,11 +128,9 @@ app.get('/ownposts', function (request, response) {
 			}]
 		})
 		.then(function(data){
-		console.log('logging data')
-		console.log(data)
 		let result = []
 		for(i=0;i<data.length;i++){
-			result.push({'title':data[i].title,'body':data[i].body})
+			result.push({'id':data[i].id,'title':data[i].title,'body':data[i].body})
 		} 
 		response.render('ownposts', {
 			user: user,
@@ -153,19 +156,20 @@ app.post('/createpost', (req, res) => {
 	let userInputTitle = req.body.title;
 	let userInputStory = req.body.body;
 	let user = req.session.user;
-	console.log(user);
+	//console.log(user);
 	if (user === undefined) {
 		res.redirect('/?message=' + encodeURIComponent("Please log in to create a post."));
 	} 
 	else {
-		User.findById(user.id).then(function(user){
+		User.findById(user.id)
+		.then(function(user){
 			user.createPost({
 				title: userInputTitle,
 				body: userInputStory
 			})
 			.then(function(post) {
 				console.log('redirecting to ownposts')
-				res.redirect('ownposts');
+				res.redirect('ownposts');//res.redirect('/ownposts')
 			})
 		})
 		
@@ -202,21 +206,97 @@ app.get('/logout', function (request, response) {
 	})
 });
 
+
+
+app.get('/specpost',function(req,res){
+	let user = req.session.user;
+	//console.log(req.query.id)
+	// console.log('user is:')
+	// console.log(user)
+	if (user === undefined) {
+		res.redirect('/?message=' + encodeURIComponent("Please log in to create a post."));
+	} else {
+		Comment.findAll({
+			include: [{
+				model: Post,
+				where: 
+				{
+					id: req.query.id
+				}
+			}]
+		})
+		.then(function(data){
+		//console.log(data[0].dataValues)
+	    //console.log(data[0].dataValues.post)
+		let result = [] //all comments
+		let result2 = data[0].dataValues.post
+
+		for(i=0;i<data.length;i++){
+			result.push({'id':data[i].dataValues.id, 'body':data[i].dataValues.body})
+		} 		
+		res.render('specpost', {
+			user: user,
+			commentInfo:result,
+			result2
+		});
+	});
+	}
+})
+
+
+app.post('/specpost/',function(req,res){
+	let user = req.session.user;
+		// console.log(req.session)
+	let userInputComment = req.body.body
+	if (user === undefined) {
+		res.redirect('/?message=' + encodeURIComponent("Please log in to see a post."));
+	} 
+	else {
+		Post.findOne({
+			where: {id: req.query.id}
+		})
+		.then(function(post){
+			// console.log('post info is:')
+			// console.log(post)
+			const value = {
+				body: userInputComment,
+				userId: user.id
+			}
+			const opts = {
+				include:[User]
+			}
+			post.createComment(value, opts) 
+		})
+		.then(function(){
+			res.redirect('/ownposts')			
+		})
+		.catch( e => console.log(e))
+	}
+});
+
+
 //Sync library before starting route
 sequelize.sync(/*{force: true}*/)
 .then(function () {
 		return User.create({//testdata otherise undefined if we run app
-		username: "bob",
-		email: "bob@bob.com",
-		password: "bob"
-	})
-	.then(function(parameter){
-		return parameter.createPost({
-		title: "testtitle",
-		body: "testbody"
-	})
-		// return parameter.createComment
-	})
+			username: "john",
+			email: "john@john.com",
+			password: "john"
+		})
+		.then(function(user){
+			return user.createPost({
+				title: "John's post",
+				body: "Hi everybody."
+			})
+		})		
+		.then(function(post){
+			return post.createComment({
+				body:"This is test comment.",
+				userId: 1
+			})
+		})
+
+
 	.then(function () {
 		const server = app.listen(3000, function () {
 			console.log('Server has started')
