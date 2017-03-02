@@ -99,8 +99,8 @@ app.get('/allposts', (req, res) => {
 		let result = [];
 		Post.findAll()
 		.then(function(data) {
-			console.log('all posts from all users:')
-			console.log(data)
+			// console.log('all posts from all users:')
+			// console.log(data)
 			for(var i = 0; i < data.length; i++) {
 				result.push({'id':data[i].id,'title': data[i].title,'body': data[i].body})
 			}
@@ -135,7 +135,7 @@ app.get('/ownposts', function (request, response) {
 		response.render('ownposts', {
 			user: user,
 			mypostInfo:result
-		});
+		})
 	});
 	}
 });
@@ -169,7 +169,7 @@ app.post('/createpost', (req, res) => {
 			})
 			.then(function(post) {
 				console.log('redirecting to ownposts')
-				res.redirect('ownposts');//res.redirect('/ownposts')
+				res.redirect('/ownposts');
 			})
 		})
 		
@@ -211,49 +211,45 @@ app.get('/logout', function (request, response) {
 app.get('/specpost',function(req,res){
 	let user = req.session.user;
 	//console.log(req.query.id)
-	// console.log('user is:')
-	// console.log(user)
 	if (user === undefined) {
 		res.redirect('/?message=' + encodeURIComponent("Please log in to create a post."));
 	} else {
-		Comment.findAll({
-			include: [{
-				model: Post,
-				where: 
-				{
-					id: req.query.id
-				}
-			}]
-		})
+		Post.findOne(
+			{where: {id: req.query.id},
+			include: [
+			{
+				model: Comment}
+				]}
+				)
 		.then(function(data){
-		//console.log(data[0].dataValues)
-	    //console.log(data[0].dataValues.post)
-		let result = [] //all comments
-		let result2 = data[0].dataValues.post
+			console.log(data)
+			res.render('specpost', {user: user, commentInfo:data})
+		// let result = [] //all comments
+		// let result2 = data[0].dataValues.post
 
-		for(i=0;i<data.length;i++){
-			result.push({'id':data[i].dataValues.id, 'body':data[i].dataValues.body})
-		} 		
-		res.render('specpost', {
-			user: user,
-			commentInfo:result,
-			result2
-		});
+		// for(i=0;i<data.length;i++){
+		// 	result.push({'id':data[i].dataValues.id, 'body':data[i].dataValues.body})
+		// } 		
+		// res.render('specpost', {
+		// 	user: user,
+		// 	commentInfo:result,
+		// 	result2
+		// });
 	});
 	}
 })
 
 
-app.post('/specpost/',function(req,res){
+app.post('/specpost/', function(req,res){
 	let user = req.session.user;
-		// console.log(req.session)
-	let userInputComment = req.body.body
+	let userInputComment = req.body.magic
+	console.log(userInputComment)
 	if (user === undefined) {
 		res.redirect('/?message=' + encodeURIComponent("Please log in to see a post."));
 	} 
 	else {
 		Post.findOne({
-			where: {id: req.query.id}
+			where: {id: req.body.postId}
 		})
 		.then(function(post){
 			// console.log('post info is:')
@@ -265,10 +261,15 @@ app.post('/specpost/',function(req,res){
 			const opts = {
 				include:[User]
 			}
-			post.createComment(value, opts) 
+			return post.createComment(value, opts) 
+			
 		})
-		.then(function(){
-			res.redirect('/ownposts')			
+		.then(function(data){
+			console.log('data is:')
+			console.log(data)
+			console.log(data.dataValues.body)
+			let newComment = data.dataValues.body
+			res.send({magic:newComment})	
 		})
 		.catch( e => console.log(e))
 	}
@@ -276,7 +277,7 @@ app.post('/specpost/',function(req,res){
 
 
 //Sync library before starting route
-sequelize.sync(/*{force: true}*/)
+sequelize.sync({force: true})
 .then(function () {
 		return User.create({//testdata otherise undefined if we run app
 			username: "john",

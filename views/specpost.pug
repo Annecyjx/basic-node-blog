@@ -5,6 +5,7 @@ html
     link(type='text/css', rel='stylesheet', href='/../css/materialize.css', media='screen,projection')
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     script(type='text/javascript', src='/../js/jquery-3.1.1.js')
+    script(type='text/javascript' src='/../js/custom.js')
       
   body(style='font-size: 22')
     if user
@@ -23,26 +24,26 @@ html
       .container         
         .header
           h2=user.username
-          h2 Showing specific post:
-          br
-          p #{result2.title}:#{result2.body} 
-          h2 Showing comments:
-          if commentInfo
-          each item in commentInfo
-            p #{item.body}  
+          h2 Showing specific post:         
+            p(class='postId', id=commentInfo.id) #{commentInfo.title}
+            p #{commentInfo.body}
+            if commentInfo.comments
+            each comment in commentInfo.comments
+              p #{comment.body}
+            div#result-box
 
-        .row
-          h2 Please leave your comment:
-          form(method='POST', action='/specpost?id=' + result2.id)
+          .row 
+            h2 Please leave your comment:
             .row
-              .input-field.col.s12
-                input#body.validate(type='text', name='body')
-                |
-                br
-                | 
-                label(for='body', class='active') Comment
-              .input-field.col.s12
-                button.btn.btn-primary(type='submit') Send
+              form()
+                .input-field.col.s12
+                  input#body.validate(type='text', name='body')
+                  |
+                  br
+                  | 
+                  label(for='body', class='active') Comment
+                .input-field.col.s12
+                  button.btn.btn-primary(type='submit') Send
     else
       .navbar-fixed
         nav
@@ -55,3 +56,5 @@ html
                 a(href='/register') Register
       .container 
         h2#error-message= message
+
+

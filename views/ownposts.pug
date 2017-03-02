@@ -25,9 +25,7 @@ html
           br
           if mypostInfo
           each item in mypostInfo
-            a(href='/specpost/?id=' + item.id ) #{item.id} #{item.title}: #{item.body}
-            //- h3 * #{item.title}: #{item.body}
-            //- button.btn.btn-primary(type='submit') View detail
+            a(href='/specpost/?id=' + item.id ) * #{item.title}: #{item.body}
     else
       .container
       h2#error-message= message
