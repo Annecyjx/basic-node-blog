@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize(`postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@localhost/nodeblog`);
+const bcrypt = require('bcrypt')
 
 app.use(express.static('static'));
 app.use(bodyParser.urlencoded( { extended: true }  ));
@@ -71,12 +72,17 @@ app.post('/login', bodyParser.urlencoded({extended: true}), function (request, r
 			email: request.body.email
 		}
 	}).then(function (user) {
-		if (user !== null && request.body.password === user.password) {
-			request.session.user = user;
-			response.redirect('/ownposts');
-		} else {
-			response.redirect('/?message=' + encodeURIComponent("Invalid email or password."));
-		}
+		bcrypt.compare(request.body.password, user.password, (err, result)=>{
+			if (err) throw err;
+			console.log(result)
+			if (user !== null && result) {
+				request.session.user = user;
+				response.redirect('/ownposts');
+			}
+			else {
+				response.redirect('/?message=' + encodeURIComponent("Invalid email or password."));
+			}
+		})
 	}, function (error) {
 		response.redirect('/?message=' + encodeURIComponent("Invalid email or password."));
 	});
@@ -188,12 +194,18 @@ app.post('/register', (req, res) => {
 	let userInputEmail = req.body.email;
 	let userInputPassword = req.body.password;
 
-	return User.create({
-		username: userInputUsername,
-		email: userInputEmail,
-		password: userInputPassword
-	}).then(function() {
-		res.redirect('/ownposts');
+	bcrypt.hash(userInputPassword, 8, (err,hash) =>{
+		if (err) throw err
+
+			return User.create({
+				username: userInputUsername,
+				email: userInputEmail,
+				password: hash
+			})
+
+		.then(function() {
+			res.redirect('/ownposts');
+		})
 	})	
 });
 
