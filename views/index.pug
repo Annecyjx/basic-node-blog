@@ -6,14 +6,37 @@ html
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     script(type='text/javascript', src='/../js/jquery-3.1.1.js')
     script.
-      $(document).ready(function () {
-        $('#submit').click(function(event) {
-          if($('#email').val().trim().length === 0 || $('#password').val().trim().length === 0) {
-            event.preventDefault();
-            $('#error-message').html("Your email or password field is empty.");
+      function validateForm() {
+        var password = document.forms['loginForm']['password'].value;
+        var email = document.forms['loginForm']['email'].value;
+        if (email == '') {
+          $('#error-message').html("Please fill out your email address.");
+          document.forms['loginForm']['email'].focus();
+          return false
           }
-        });
-      });
+        if (email.length > 50) {
+          $('#error-message').html("Invalid email.");
+          document.forms['loginForm']['email'].focus();
+          return false
+        }
+        if (password == '') {
+          $('#error-message').html("Please fill out your password.");
+          document.forms['loginForm']['password'].focus();
+          return false
+        }
+        if (password.length > 50) {
+          $('#error-message').html("Invalid password");
+          document.forms['loginForm']['password'].focus();
+          return false
+        }
+        if (password.length < 8) {
+          $('#error-message').html("Invalid password");
+          document.forms['loginForm']['password'].focus();
+          return false
+        }
+          return(true)
+      }
+
   body(style='font-size: 22')
     if user
       .navbar-fixed
@@ -55,16 +78,16 @@ html
           h1 Welcome!
           br
           .row
-            form(method='POST', action='/login')
+            form(method='POST', action='/login', name='loginForm', onsubmit='return validateForm()')
               .row
                 .input-field.col.s12
-                  input#email.validate(type='text', name='email')
+                  input#email.validate(type='text', name='email', maxlength=50, required) 
                   |
                   br
                   | 
                   label(for='email', class='active') Email
                 .input-field.col.s12
-                  input#password.validate(type='text', name='password')
+                  input#password.validate(type='password', name='password', maxlength=50, required) 
                   |
                   br
                   | 

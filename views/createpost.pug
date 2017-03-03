@@ -6,14 +6,30 @@ html
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     script(type='text/javascript', src='/../js/jquery-3.1.1.js')
     script.
-      $(document).ready(function () {
-        $('#submit').click(function(event) {
-          if($('#email').val().trim().length === 0 || $('#password').val().trim().length === 0) {
-            event.preventDefault();
-            $('#error-message').html("Your email or password field is empty.");
-          }
-        });
-      });
+      function validateForm() {
+        var title = document.forms['userForm']['title'].value;
+        var body = document.forms['userForm']['body'].value;
+        if (title == '') {
+          $('#error-message').html("Your title cannot be empty");
+          document.userForm.title.focus();
+          return false
+        }
+        if (title.length > 100) {
+          $('#error-message').html("Your title cannot be longer than 100 characters");
+          document.userForm.title.focus();
+          return false
+        }
+        if (body == '') {
+          $('#error-message').html("Your message cannot be empty");
+          document.userForm.body.focus();
+          return false
+        } 
+        if (body.length > 1024) {
+          $('#error-message').html("Your message cannot be more than 1024 characters");
+          document.userForm.body.focus();
+          return false
+        }          
+      }
   body(style='font-size: 22')
     if user
       .navbar-fixed
@@ -35,16 +51,16 @@ html
           h1 Create a post here:
           br
         .row
-            form(method='POST', action='/createpost')
+            form(method='POST', action='/createpost', onsubmit='return validateForm()', name='userForm')
               .row
                 .input-field.col.s12
-                  input#title.validate(type='text', name='title')
+                  input#title.validate(type='text', name='title',maxlength=100, required)
                   |
                   br
                   | 
                   label(for='title', class='active') Title
                 .input-field.col.s12
-                  input#body.validate(type='text', name='body')
+                  input#body.validate(type='text', name='body',maxlength=1024, required)
                   |
                   br
                   | 

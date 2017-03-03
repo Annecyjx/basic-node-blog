@@ -35,9 +35,9 @@ html
           .row 
             h2 Please leave your comment:
             .row
-              form()
+              form(onsubmit='return validateForm()', name='commentForm')
                 .input-field.col.s12
-                  input#body.validate(type='text', name='body')
+                  input#body.validate(type='text', name='body',maxlength=1024, required)
                   |
                   br
                   | 

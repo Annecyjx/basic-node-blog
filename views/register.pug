@@ -6,14 +6,47 @@ html
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     script(type='text/javascript', src='/../js/jquery-3.1.1.js')
     script.
-      $(document).ready(function () {
-        $('#submit').click(function(event) {
-          if($('#email').val().trim().length === 0 || $('#password').val().trim().length === 0) {
-            event.preventDefault();
-            $('#error-message').html("Your email or password field is empty.");
+      function validateForm() {
+        var username = document.forms['userForm']['username'].value;
+        var password = document.forms['userForm']['password'].value;
+        var email = document.forms['userForm']['email'].value;
+        if (username == '') {
+          $('#error-message').html("Your username cannot be empty");
+          document.forms['userForm']['username'].focus();
+          return false
           }
-        });
-      });
+        if (username.length > 20) {
+          $('#error-message').html("Your username cannot be more than 20 characters");
+          document.forms['userForm']['username'].focus();
+          return false
+        }
+        if (email == '') {
+          $('#error-message').html("Your email cannot be empty");
+          document.forms['userForm']['email'].focus();
+          return false
+          }
+        if (email.length > 50) {
+          $('#error-message').html("Your email cannot be more than 50 characters");
+          document.forms['userForm']['email'].focus();
+          return false
+        }
+        if (password == '') {
+          $('#error-message').html("Your password cannot be empty");
+          document.forms['userForm']['password'].focus();
+          return false
+        }
+        if (password.length > 50) {
+          $('#error-message').html("Your password cannot be more than 50 characters");
+          document.forms['userForm']['password'].focus();
+          return false
+        }
+        if (password.length < 8) {
+          $('#error-message').html("Your password has to be 8 or more characters");
+          document.forms['userForm']['password'].focus();
+          return false
+        }
+          return(true)
+      }
   body(style='font-size: 22')
     .navbar-fixed
         nav
@@ -28,25 +61,26 @@ html
         h1 Register
         br
        .row
-          form(method='POST', action='/register')
+          form(method='POST', action='/register', name='userForm', onsubmit='return validateForm()')
             .row
               .input-field.col.s12
-                input#username.validate(type='text', name='username')
+                input#username.validate(type='text', name='username', maxlength=20, required)
                 |
                 br
                 | 
                 label(for='username', class='active') Username
               .input-field.col.s12
-                input#email.validate(type='text', name='email')
+                input#email.validate(type='text', name='email', maxlength=50, required)
                 |
                 br
                 | 
                 label(for='email', class='active') Email
               .input-field.col.s12
-                input#password.validate(type='text', name='password')
+                input#password.validate(type='password', name='password', maxlength=50, required)
                 |
                 br
                 | 
                 label(for='password', class='active') Password
               .input-field.col.s12
                 button.btn.btn-primary(type='submit') Register
+          h2#error-message= message

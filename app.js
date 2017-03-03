@@ -57,6 +57,8 @@ app.get('/', function (request, response) {
 });
 
 app.post('/login', bodyParser.urlencoded({extended: true}), function (request, response) {
+	
+    //server side validation
 	if(request.body.email.length === 0) {
 		response.redirect('/?message=' + encodeURIComponent("Please fill out your email address."));
 		return;
@@ -72,9 +74,14 @@ app.post('/login', bodyParser.urlencoded({extended: true}), function (request, r
 			email: request.body.email
 		}
 	}).then(function (user) {
+		if(user === null){
+			response.redirect('/?message=' + encodeURIComponent("Invalid email or password."));
+		}
+		else{
+		//console.log(request.body.password)
+		//console.log(user.password)
 		bcrypt.compare(request.body.password, user.password, (err, result)=>{
 			if (err) throw err;
-			console.log(result)
 			if (user !== null && result) {
 				request.session.user = user;
 				response.redirect('/ownposts');
@@ -83,6 +90,7 @@ app.post('/login', bodyParser.urlencoded({extended: true}), function (request, r
 				response.redirect('/?message=' + encodeURIComponent("Invalid email or password."));
 			}
 		})
+		}
 	}, function (error) {
 		response.redirect('/?message=' + encodeURIComponent("Invalid email or password."));
 	});
@@ -236,17 +244,6 @@ app.get('/specpost',function(req,res){
 		.then(function(data){
 			console.log(data)
 			res.render('specpost', {user: user, commentInfo:data})
-		// let result = [] //all comments
-		// let result2 = data[0].dataValues.post
-
-		// for(i=0;i<data.length;i++){
-		// 	result.push({'id':data[i].dataValues.id, 'body':data[i].dataValues.body})
-		// } 		
-		// res.render('specpost', {
-		// 	user: user,
-		// 	commentInfo:result,
-		// 	result2
-		// });
 	});
 	}
 })
@@ -255,7 +252,7 @@ app.get('/specpost',function(req,res){
 app.post('/specpost/', function(req,res){
 	let user = req.session.user;
 	let userInputComment = req.body.magic
-	console.log(userInputComment)
+	//console.log(userInputComment)
 	if (user === undefined) {
 		res.redirect('/?message=' + encodeURIComponent("Please log in to see a post."));
 	} 
